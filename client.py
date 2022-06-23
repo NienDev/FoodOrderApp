@@ -10,18 +10,7 @@ from PIL import ImageTk, Image
 HOST = "127.0.0.1"
 PORT = 65432
 FORMAT = "utf8"
-
-def show_menu(logo, welcome_label, btn, client, img_labels):
-    global FOOD_LISTS
-    global root
-    #turn off the show_welcome window
-    logo.forget()
-    welcome_label.forget()
-    btn.forget()
     
-    #show menu
-    for img_label in img_labels:
-        img_label.pack()
     
 def download_food_image(Food_Info):
     #create folder
@@ -44,9 +33,29 @@ def download_food_image(Food_Info):
 
                 handle.write(block)       
     
+def show_menu(logo, welcome_label, btn, client, img_labels):
+        global root
+        global FRAME
+        #turn off the show_welcome window
+        logo.forget()
+        welcome_label.forget()
+        btn.forget()
+        
+        #show menu
+        for idx in range(5):
+            img = Image.open("./food_imgs/pic" + str(idx) + ".jpg")
+            img = img.resize((100, 100))
+            img = ImageTk.PhotoImage(img)
+            label = Button(FRAME)
+            label.image = img
+            label['image']=img
+            label.pack() 
+    
 def show_welcome(logo, frame, welcome_label, btn):
     global root
     
+    
+   
     frame.pack(padx=50, pady=50)
     
     logo.pack()
@@ -76,6 +85,8 @@ try:
     root.title("FOOD ORDER APP")
     root.iconbitmap("icon.ico")
     
+    
+    
     #widgets
     FRAME = LabelFrame(root, padx=50, pady=10)
     LOGO = ImageTk.PhotoImage(Image.open("logo.png"))
@@ -94,17 +105,6 @@ try:
     
     show_welcome(LOGO_IMG, FRAME, WELCOME_LABEL, BTN_MENU)
     
-    #put image to label
-    # for idx, info in enumerate(Food_Info):
-        # img = ImageTk.PhotoImage(Image.open("./food_imgs/pic" + str(idx) + ".jpg"))
-        # label = Label(FRAME, image=img)
-        # IMG_LABELS.append(label)
-        
-    
-    img = ImageTk.PhotoImage(Image.open("./food_imgs/pic0" + ".jpg"))
-    label = Label(FRAME, image=img)
-    label.pack()
-        
     root.eval('tk::PlaceWindow . center')
     
     root.mainloop()
@@ -114,6 +114,8 @@ except:
     print("error")
     
 input()
+
+
 
 
 
