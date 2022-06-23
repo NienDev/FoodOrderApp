@@ -1,0 +1,34 @@
+{
+    "food": [
+        {
+            "name": "Bánh canh cua",
+            "description": "...",
+            "url": "https://i.postimg.cc/TP0CpJzJ/banh-canh-cua.jpg",
+            "price": "123"
+        },
+        {
+            "name": "Bánh mì chảo",
+            "description": "...",
+            "url": "https://i.postimg.cc/43WqrGxG/banh-mi-chao.jpg",
+            "price": "123"
+        },
+        {
+            "name": "Bánh mì tôm hùm",
+            "description": "...",
+            "url": "https://i.postimg.cc/sxkJt6Ws/banh-mi-tom-hum.jpg",
+            "price": "123"
+        },
+        {
+            "name": "Bánh xèo Nhật Bản",
+            "description": "...",
+            "url": "https://i.postimg.cc/x8JRpDc6/banh-xeo-nhat-ban.jpg",
+            "price": "123"
+        },
+        {
+            "name": "Bún bò huế",
+            "description": "...",
+            "url": "https://i.postimg.cc/1Rbhmyc5/bun-bo-hue.jpg",
+            "price": "123"
+        }
+    ]
+}
