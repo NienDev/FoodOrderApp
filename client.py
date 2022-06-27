@@ -22,6 +22,7 @@ def download_food_image(Food_Info):
        os.makedirs(final_directory)
        
        for idx, info in enumerate(Food_Info):
+       
         # print(pic_url)
         with open('./food_imgs/pic' + str(idx) + '.jpg', 'wb') as handle:
             response = requests.get(info['url'], stream=True)
@@ -176,7 +177,13 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 thanks_window.geometry("200x200")
                 label = Label(thanks_window, text="Thank you, enjoy your meal")
                 label.pack()
-            
+                
+                # take off all the widget of show receipt and show menu
+                pop.destroy()
+                pop.update()
+                frame.forget()
+                show_welcome()
+                
             def show_invalid():
                 thanks_window = Toplevel(root)
                 thanks_window.title = "INVALID"
@@ -428,18 +435,16 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
             
         show_image()
         
-def show_welcome(logo, frame, welcome_label, btn):
+def show_welcome():
     global root
+
+    FRAME.place(relx=0.5, rely=0.5, anchor=CENTER)
     
+    LOGO_IMG.pack()
     
-   
-    frame.place(relx=0.5, rely=0.5, anchor=CENTER)
+    WELCOME_LABEL.pack(pady=(20,40))
     
-    logo.pack()
-    
-    welcome_label.pack(pady=(20,40))
-    
-    btn.pack(pady=(0,20))
+    BTN_MENU.pack(pady=(0,20))
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
@@ -489,7 +494,7 @@ try:
     
     # welcome
     
-    show_welcome(LOGO_IMG, FRAME, WELCOME_LABEL, BTN_MENU)
+    show_welcome()
     
 
     
@@ -500,30 +505,6 @@ except:
     print("error")
     
 input()
-
-
-  # for idx in range(20):
-            # def forget(btn):
-                # print(btn)
-                # btn.forget()
-        
-            # if (col1%3==0):
-                # row1+=1
-                # col1=0
-            
-            # img = Image.open("./food_imgs/pic" + str(0) + ".jpg")
-            # img.thumbnail((800,400))
-            # img.save("./food_imgs/p" + str(0) + ".jpg")
-            
-            # img = Image.open("./food_imgs/p" + str(0) + ".jpg")
-            # img = ImageTk.PhotoImage(img)
-            
-            # btn_img = Button(second_frame, command=lambda: show_food_description(second_frame, idx))
-            # btn_img.image = img
-            # btn_img['image']=img
-            # btn_img.grid(row=int(row1), column=int(col1), padx=20, pady=20)
-            # col1+=1
-
 
 
 
