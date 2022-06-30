@@ -59,6 +59,8 @@ def recvAssetsFromServer(client):
     current_directory = os.getcwd()
     final_directory = os.path.join(current_directory, r'Assets')
     if os.path.exists(final_directory):
+        msg = "DONE"
+        client.sendall(msg.encode(FORMAT))
         return
         
     if (msg == "FOLDER"):
@@ -81,18 +83,16 @@ def recvAssetsFromServer(client):
         msg = "done"
         msg = client.sendall(msg.encode(FORMAT))
 
-def show_menu(logo, welcome_label, btn, client, img_labels):
+def show_menu(logo, btn, client, img_labels):
         global root
-        global FRAME
         global Food_Info
         global amount_dic
         global totalmoney
         global IS_VALID
         #turn off the show_welcome window
         logo.forget()
-        welcome_label.forget()
         btn.forget()
-        FRAME.forget()
+ 
         
         frame = LabelFrame(root)
         frame.pack(padx=20,pady=20,fill=BOTH,expand=1)
@@ -524,12 +524,46 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
             
             #total money section
             totalmoney[0] = 0
+            print(amount_dic)
             for i in range(10):
                 totalmoney[0] += amount_dic[i+1] * int(Food_Info[i]['price'])
             
             totalmoney_label = Label(pop, text="Total Money: " + str(totalmoney[0]))
             totalmoney_label.pack(side=LEFT, fill = BOTH, expand = True)
             
+            def update_data_to_server():
+                # amount_dic: the amount of food i
+                # Food_Info: 
+               
+                #send object to server
+                
+                id_client = client.getsockname()[0]
+                detail_order = []
+                total = 0
+                for i in range(10):
+                    if (amount_dic[i+1] == 0): continue
+                    order = {
+                        "Id": i,
+                        "Food_name": Food_Info[i]['name'],
+                        "Quantity": amount_dic[i+1],
+                        "Price": Food_Info[i]['price'],  
+                        "Total": amount_dic[i+1] * int(Food_Info[i]['price'])
+                    }
+                    total += amount_dic[i+1] * int(Food_Info[i]['price']) 
+                    detail_order.append(order)
+                
+                order = {
+                    "ID_Client": id_client,
+                    "Food_List": detail_order,
+                    "Total": total
+                }
+                
+                order = pickle.dumps(order)
+                client.sendall(order)
+                client.recv(4096)
+                client.sendall("Still waiting".encode(FORMAT))
+                client.recv(4096)
+                
             def show_thank_window():
                 screen_width = root.winfo_screenwidth()
                 screen_height = root.winfo_screenheight()
@@ -547,8 +581,13 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 # take off all the widget of show receipt and show menu
                 pop.destroy()
                 pop.update()
-                frame.forget()
+                # frame.forget()
+                for widget in frame.winfo_children():
+                    widget.destroy()
+                frame.destroy()
                 show_welcome()
+                
+                update_data_to_server()
                 
             def show_invalid():
                 thanks_window = Toplevel(root)
@@ -579,7 +618,7 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                     e.pack()
                     credit_btn = Button(credit_window, text="Confirm", command=lambda: checkCreditNumber(e))
                     credit_btn.pack()
-            
+                
             cash = IntVar()
             credit = IntVar()
             paid_cash = Checkbutton(pop, text="Paid by cash", variable=cash)
@@ -628,16 +667,18 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 food_description1 = Food_Info[0]['description']
                 name_label1 = Label(wrap_frame1, text=food_name1, font='Roboto 16 bold',wraplength=200)
                 description_label1 = Label(wrap_frame1, wraplength=200 ,text=food_description1, justify=LEFT) 
+                price1 = Label(wrap_frame1, text="Price: " + Food_Info[0]['price'], justify=LEFT)
                 
                 name_label1.grid(row=1, column=0, pady=(0, 20), padx=20)
                 description_label1.grid(row=2, column=0, pady=20, padx=20)
+                price1.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount1 = Entry(wrap_frame1, width=10, borderwidth=4)
                 amount1.insert(0, "Quantity")
-                amount1.grid(row=3,column=0, pady=20)
+                amount1.grid(row=4,column=0, pady=20)
                 
                 order_btn1 = Button(wrap_frame1, text="Order", command=order1)
-                order_btn1.grid(row=3, column=1, padx=10)
+                order_btn1.grid(row=4, column=1, padx=10)
             
             #image 2
             def show_food_description2():
@@ -662,22 +703,22 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 btn2 = Button(wrap_frame2, command=back_to_show_image2, text="x")
                 btn2.grid(row=0, column=1, padx=10, pady=10)
                 
-             
-        
                 food_name2 = Food_Info[1]['name']
                 food_description2 = Food_Info[1]['description']
                 name_label2 = Label(wrap_frame2, text=food_name2, font='Roboto 16 bold',wraplength=200)
                 description_label2 = Label(wrap_frame2, wraplength=200 ,text=food_description2, justify=LEFT) 
+                price2 = Label(wrap_frame2, text="Price: " + Food_Info[1]['price'], justify=LEFT)
                 
                 name_label2.grid(row=1, column=0, pady=(0, 20), padx=20)
                 description_label2.grid(row=2, column=0,  pady=20, padx=20)
+                price2.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount2 = Entry(wrap_frame2, width=10, borderwidth=4)
                 amount2.insert(0, "Quantity")
-                amount2.grid(row=3,column=0, pady=20)
+                amount2.grid(row=4,column=0, pady=20)
                 
                 order_btn2 = Button(wrap_frame2, text="Order", command=order2)
-                order_btn2.grid(row=3, column=1, padx=10)
+                order_btn2.grid(row=4, column=1, padx=10)
             
             #image 3
             def show_food_description3():
@@ -706,16 +747,18 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 food_description3 = Food_Info[2]['description']
                 name_label3 = Label(wrap_frame3, text=food_name3, font='Roboto 16 bold',wraplength=200)
                 description_label3 = Label(wrap_frame3, wraplength=200 ,text=food_description3, justify=LEFT) 
+                price3 = Label(wrap_frame3, text="Price: " + Food_Info[2]['price'], justify=LEFT)
                 
                 name_label3.grid(row=1, column=0, pady=(0,20), padx=20)
                 description_label3.grid(row=2, column=0,  pady=20, padx=20)
+                price3.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount3 = Entry(wrap_frame3, width=10, borderwidth=4)
                 amount3.insert(0, "Quantity")
-                amount3.grid(row=3,column=0, pady=20)
+                amount3.grid(row=4,column=0, pady=20)
                 
                 order_btn3 = Button(wrap_frame3, text="Order", command=order3)
-                order_btn3.grid(row=3, column=1, padx=10)
+                order_btn3.grid(row=4, column=1, padx=10)
             
             #image 4
             def show_food_description4():
@@ -744,16 +787,18 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 food_description4 = Food_Info[3]['description']
                 name_label4 = Label(wrap_frame4, text=food_name4, font='Roboto 16 bold',wraplength=200)
                 description_label4 = Label(wrap_frame4, wraplength=200 ,text=food_description4, justify=LEFT) 
+                price4 = Label(wrap_frame4, text="Price: " + Food_Info[3]['price'], justify=LEFT)
                 
                 name_label4.grid(row=1, column=0, pady=(0, 20), padx=20)
                 description_label4.grid(row=2, column=0,  pady=20, padx=20)
+                price4.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount4 = Entry(wrap_frame4, width=10, borderwidth=4)
                 amount4.insert(0, "Quantity")
-                amount4.grid(row=3,column=0, pady=20)
+                amount4.grid(row=4,column=0, pady=20)
                 
                 order_btn4 = Button(wrap_frame4, text="Order", command=order4)
-                order_btn4.grid(row=3, column=1, padx=10)
+                order_btn4.grid(row=4, column=1, padx=10)
             
             #image 5
             def show_food_description5():
@@ -782,16 +827,18 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 food_description5 = Food_Info[4]['description']
                 name_label5 = Label(wrap_frame5, text=food_name5, font='Roboto 16 bold',wraplength=200)
                 description_label5 = Label(wrap_frame5, wraplength=200 ,text=food_description5, justify=LEFT) 
+                price5 = Label(wrap_frame5, text="Price: " + Food_Info[4]['price'], justify=LEFT)
                 
                 name_label5.grid(row=1, column=0, pady=(0, 20), padx=20)
                 description_label5.grid(row=2, column=0,  pady=20, padx=20)
+                price5.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount5 = Entry(wrap_frame5, width=10, borderwidth=4)
                 amount5.insert(0, "Quantity")
-                amount5.grid(row=3,column=0, pady=20)
+                amount5.grid(row=4,column=0, pady=20)
                 
                 order_btn5 = Button(wrap_frame5, text="Order", command=order5)
-                order_btn5.grid(row=3, column=1, padx=10)
+                order_btn5.grid(row=4, column=1, padx=10)
             
             #image 6
             def show_food_description6():
@@ -820,16 +867,18 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 food_description6 = Food_Info[5]['description']
                 name_label6 = Label(wrap_frame6, text=food_name6, font='Roboto 16 bold',wraplength=200)
                 description_label6 = Label(wrap_frame6, wraplength=200 ,text=food_description6, justify=LEFT) 
+                price6 = Label(wrap_frame6, text="Price: " + Food_Info[5]['price'], justify=LEFT)
                 
                 name_label6.grid(row=1, column=0, pady=(0, 20), padx=20)
                 description_label6.grid(row=2, column=0,  pady=20, padx=20)
+                price6.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount6 = Entry(wrap_frame6, width=10, borderwidth=4)
                 amount6.insert(0, "Quantity")
-                amount6.grid(row=3,column=0, pady=20)
+                amount6.grid(row=4,column=0, pady=20)
                 
                 order_btn6 = Button(wrap_frame6, text="Order", command=order6)
-                order_btn6.grid(row=3, column=1, padx=10)
+                order_btn6.grid(row=4, column=1, padx=10)
             
             #image 7
             def show_food_description7():
@@ -858,16 +907,18 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 food_description7 = Food_Info[6]['description']
                 name_label7 = Label(wrap_frame7, text=food_name7, font='Roboto 16 bold',wraplength=200)
                 description_label7 = Label(wrap_frame7, wraplength=200 ,text=food_description7, justify=LEFT) 
+                price7 = Label(wrap_frame7, text="Price: " + Food_Info[6]['price'], justify=LEFT)
                 
                 name_label7.grid(row=1, column=0, pady=(0, 20), padx=20)
                 description_label7.grid(row=2, column=0,  pady=20, padx=20)
+                price7.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount7 = Entry(wrap_frame7, width=10, borderwidth=4)
                 amount7.insert(0, "Quantity")
-                amount7.grid(row=3,column=0, pady=20)
+                amount7.grid(row=4,column=0, pady=20)
                 
                 order_btn7 = Button(wrap_frame7, text="Order", command=order7)
-                order_btn7.grid(row=3, column=1, padx=10)
+                order_btn7.grid(row=4, column=1, padx=10)
             
             #image 8
             def show_food_description8():
@@ -896,16 +947,18 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 food_description8 = Food_Info[7]['description']
                 name_label8 = Label(wrap_frame8, text=food_name8, font='Roboto 16 bold',wraplength=200)
                 description_label8 = Label(wrap_frame8, wraplength=200 ,text=food_description8, justify=LEFT) 
+                price8 = Label(wrap_frame8, text="Price: " + Food_Info[7]['price'], justify=LEFT)
                 
                 name_label8.grid(row=1, column=0, pady=(0, 20), padx=20)
                 description_label8.grid(row=2, column=0,  pady=20, padx=20)
+                price8.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount8 = Entry(wrap_frame8, width=10, borderwidth=4)
                 amount8.insert(0, "Quantity")
-                amount8.grid(row=3,column=0, pady=20)
+                amount8.grid(row=4,column=0, pady=20)
                 
                 order_btn8 = Button(wrap_frame8, text="Order", command=order8)
-                order_btn8.grid(row=3, column=1, padx=10)
+                order_btn8.grid(row=4, column=1, padx=10)
             
             #image 9
             def show_food_description9():
@@ -934,16 +987,18 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 food_description9 = Food_Info[8]['description']
                 name_label9 = Label(wrap_frame9, text=food_name9, font='Roboto 16 bold',wraplength=200)
                 description_label9 = Label(wrap_frame9, wraplength=200 ,text=food_description9, justify=LEFT) 
+                price9 = Label(wrap_frame9, text="Price: " + Food_Info[8]['price'], justify=LEFT)
                 
                 name_label9.grid(row=1, column=0, pady=(0, 20), padx=20)
                 description_label9.grid(row=2, column=0,  pady=20, padx=20)
+                price9.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount9= Entry(wrap_frame9, width=10, borderwidth=4)
                 amount9.insert(0, "Quantity")
-                amount9.grid(row=3,column=0, pady=20)
+                amount9.grid(row=4,column=0, pady=20)
                 
                 order_btn9 = Button(wrap_frame9, text="Order", command=order9)
-                order_btn9.grid(row=3, column=1, padx=10)
+                order_btn9.grid(row=4, column=1, padx=10)
             
             #image 10
             def show_food_description10():
@@ -972,16 +1027,18 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
                 food_description10 = Food_Info[9]['description']
                 name_label10 = Label(wrap_frame10, text=food_name10, font='Roboto 16 bold',wraplength=200)
                 description_label10 = Label(wrap_frame10, wraplength=200 ,text=food_description10, justify=LEFT) 
+                price10 = Label(wrap_frame10, text="Price: " + Food_Info[9]['price'], justify=LEFT)
                 
                 name_label10.grid(row=1, column=0, pady=(0, 20), padx=20)
                 description_label10.grid(row=2, column=0,  pady=20, padx=20)
+                price10.grid(row=3, column=0, pady=20, sticky="w", padx=20)
                 
                 amount10= Entry(wrap_frame10, width=10, borderwidth=4)
                 amount10.insert(0, "Quantity")
-                amount10.grid(row=3,column=0, pady=20)
+                amount10.grid(row=4,column=0, pady=20)
                 
                 order_btn10 = Button(wrap_frame10, text="Order", command=order10)
-                order_btn10.grid(row=3, column=1, padx=10)
+                order_btn10.grid(row=4, column=1, padx=10)
             
             img1 = Image.open("./Assets/img10.jpg")
             img1 = ImageTk.PhotoImage(img1)
@@ -1075,13 +1132,13 @@ def show_menu(logo, welcome_label, btn, client, img_labels):
 def show_welcome():
     global root
 
-    FRAME.place(relx=0.5, rely=0.5, anchor=CENTER)
+    # FRAME.place(relx=0.5, rely=0.5, anchor=CENTER)
     
-    LOGO_IMG.pack()
+    LOGO_IMG.place(relx=0.5, rely=0.5, anchor=CENTER)
     
-    WELCOME_LABEL.pack(pady=(20,40))
+    # WELCOME_LABEL.pack(pady=(20,40))
     
-    BTN_MENU.pack(pady=(0,20))
+    BTN_MENU.place(x=800, y=425)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # try:
@@ -1108,8 +1165,15 @@ Food_Info = client.recv(4096)
 client.sendall(msg.encode(FORMAT))
 Food_Info = pickle.loads(Food_Info)
 FOOD_LISTS.append(Food_Info)
+
 # download_food_image(Food_Info)
 recvAssetsFromServer(client)
+
+#check whether client has ordered or not
+amount_dic = client.recv(4096)
+amount_dic = pickle.loads(amount_dic)
+print(amount_dic)
+client.sendall("DONE".encode(FORMAT))
 
 
 root = Tk()
@@ -1119,11 +1183,11 @@ root.iconbitmap("./Assets/img21.jpg")
 root.geometry("1360x700+0+0")
 
 #widgets
-FRAME = LabelFrame(root, padx=20, pady=20)
-LOGO = ImageTk.PhotoImage(Image.open("logo.png"))
-LOGO_IMG = Label(FRAME, image=LOGO)
-WELCOME_LABEL = Label(FRAME, text="Welcome to NNP Restaurant", font=("Roboto", 20, "bold"))
-BTN_MENU = Button(FRAME, text="Show Food Menu", padx=20,pady=10, command=lambda: show_menu(LOGO_IMG, WELCOME_LABEL, BTN_MENU, client, IMG_LABELS))
+# FRAME = LabelFrame(root, padx=20, pady=20)
+LOGO = ImageTk.PhotoImage(Image.open("./Assets/img24.jpg"))
+LOGO_IMG = Label(root, image=LOGO)
+# WELCOME_LABEL = Label(FRAME, text="Welcome to NNP Restaurant", font=("Roboto", 20, "bold"))
+BTN_MENU = Button(root, text="Show Food Menu", padx=20,pady=10, command=lambda: show_menu(LOGO_IMG, BTN_MENU, client, IMG_LABELS))
 IMG_LABELS = []
 
 
@@ -1139,6 +1203,10 @@ show_welcome()
 
 
 root.mainloop()
+msg = "FINISH"
+client.sendall(msg.encode(FORMAT))
+client.recv(1024)
+client.sendall(msg.encode(FORMAT))
 print(STATE)
         
 # except:
