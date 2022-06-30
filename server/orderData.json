@@ -1,0 +1,35 @@
+[
+  {
+    "ID_Client": 1,
+    "Food_List": [
+      {
+        "Id": 1,
+        "Food_name": "Fried Chicken",
+        "Quantity": 1,
+        "Price": 100,
+        "Total": 100
+      }
+    ],
+    "Total": 100
+  },
+  {
+    "ID_Client": "127.0.0.1",
+    "Food_List": [
+      {
+        "Id": 0,
+        "Food_name": "Lobster Bread",
+        "Quantity": 1,
+        "Price": "10",
+        "Total": 10
+      },
+      {
+        "Id": 3,
+        "Food_name": "Strawberry Cake",
+        "Quantity": 2,
+        "Price": "40",
+        "Total": 80
+      }
+    ],
+    "Total": 90
+  }
+]
